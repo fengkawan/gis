@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Snail Noodle Export Visualization</title>
+    <meta charset="UTF-8">
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #101724;
+        }
+
+        #echartsMap {
+            width: 100%;
+            height: 100vh;
+        }
+
+        .map-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="map-wrapper">
+        <div id="echartsMap"></div>
+    </div>
+
+    <!-- Include ECharts and World Map -->
+<!-- 引入 ECharts CDN -->
+<script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+<!-- 引入 ECharts 世界地图 -->
+<script src="https://cdn.jsdelivr.net/npm/echarts/map/js/world.js"></script>
+
+    <script>
+        let chart = echarts.init(document.getElementById('echartsMap'));
+
+        var geoCoordMap = {
+    '柳州市': [109.4239676, 24.3284746],
+    '新加坡': [103.51, 1.17],
+    '中国': [116.40, 39.90],
+    '美国': [-95.712891, 37.09024],
+    '加拿大': [-102.646409, 59.994255],
+    '澳大利亚': [133.775136, -25.274398],
+    '德国': [10.451526, 51.165691],
+    '英国': [-3.435973, 55.378051],
+    '荷兰': [5.291266, 52.132633],
+    '法国': [2.213749, 46.227638],
+    '日本': [138.252924, 36.204824],
+    '印度尼西亚': [113.921327, -0.789275],
+    '马来西亚': [101.975766, 4.210484],
+    '俄罗斯': [105.318756, 61.52401],
+    '印度': [78.96288, 20.593684],
+    '尼日利亚': [8.675277, 9.081999],
+    '泰国':[100.4935089,13.7524938 ],
+    '韩国':[127.016758,37.5893851]
+};
+
+var exportData = [
+    [{ name: '柳州市' }, { name: '新加坡', value: 30 }],
+    [{ name: '柳州市' }, { name: '美国', value: 30 }],
+    [{ name: '柳州市' }, { name: '加拿大', value: 30 }],
+    [{ name: '柳州市' }, { name: '澳大利亚', value: 30 }],
+    [{ name: '柳州市' }, { name: '德国', value: 30 }],
+    [{ name: '柳州市' }, { name: '英国', value: 30 }],
+    [{ name: '柳州市' }, { name: '荷兰', value: 30 }],
+    [{ name: '柳州市' }, { name: '法国', value: 30 }],
+    [{ name: '柳州市' }, { name: '日本', value: 30 }],
+    [{ name: '柳州市' }, { name: '印度尼西亚', value: 30 }],
+    [{ name: '柳州市' }, { name: '马来西亚', value: 30 }],
+    [{ name: '柳州市' }, { name: '俄罗斯', value: 30 }],
+    [{ name: '柳州市' }, { name: '印度', value: 30 }],
+    [{ name: '柳州市' }, { name: '尼日利亚', value: 30 }],
+    [{ name: '柳州市' }, { name: '泰国', value: 30 }],
+    [{ name: '柳州市' }, { name: '韩国', value: 30 }]
+    
+];
+
+        var planePath = 'path://M1705.06,1318.313v-89.254l-319.9-221.799l0.073-208.063c0.521-84.662-26.629-121.796-63.961-121.491c-37.332-0.305-64.482,36.829-63.961,121.491l0.073,208.063l-319.9,221.799v89.254l330.343-157.288l12.238,241.308l-134.449,92.931l0.531,42.034l175.125-42.917l175.125,42.917l0.531-42.034l-134.449-92.931l12.238-241.308L1705.06,1318.313z';
+
+        var convertData = function(data) {
+            var res = [];
+            for (var i = 0; i < data.length; i++) {
+                var dataItem = data[i];
+                var fromCoord = geoCoordMap[dataItem[0].name];
+                var toCoord = geoCoordMap[dataItem[1].name];
+                if (fromCoord && toCoord) {
+                    res.push([{
+                        coord: fromCoord
+                    }, {
+                        coord: toCoord
+                    }]);
+                }
+            }
+            return res;
+        };
+
+        var color = ['#9ae5fc', '#dcbf71'];
+        var series = [];
+
+        [
+            ['柳州市', exportData]
+        ].forEach(function(item) {
+            series.push({
+                type: 'lines',
+                zlevel: 1,
+                effect: {
+                    show: true,
+                    period: 6,
+                    trailLength: 0.7,
+                    color: '#fff',
+                    symbolSize: 3
+                },
+                lineStyle: {
+                    normal: {
+                        color: color[0],
+                        width: 0,
+                        curveness: -0.2
+                    }
+                },
+                data: convertData(item[1])
+            }, {
+                type: 'lines',
+                zlevel: 2,
+                effect: {
+                    show: true,
+                    period: 6,
+                    trailLength: 0,
+                    symbolSize: 5
+                },
+                lineStyle: {
+                    normal: {
+                        color: color[0],
+                        width: 1,
+                        opacity: 0.6,
+                        curveness: -0.2
+                    }
+                },
+                data: convertData(item[1])
+            }, {
+                type: 'effectScatter',
+                coordinateSystem: 'geo',
+                zlevel: 3,
+                rippleEffect: {
+                    brushType: 'stroke'
+                },
+                label: {
+                    normal: {
+                        show: true,
+                        position: 'left',
+                        formatter: '{b}'
+                    }
+                },
+                itemStyle: {
+                    normal: {
+                        color: color[0]
+                    }
+                },
+                data: item[1].map(function(dataItem) {
+                    return {
+                        name: dataItem[1].name,
+                        value: geoCoordMap[dataItem[1].name],
+                        symbolSize: dataItem[1].value / 4
+                    };
+                })
+            });
+        });
+
+        series.push({
+            type: 'effectScatter',
+            coordinateSystem: 'geo',
+            zlevel: 3,
+            rippleEffect: {
+                brushType: 'stroke'
+            },
+            label: {
+                normal: {
+                    show: true,
+                    position: 'left',
+                    formatter: '{b}'
+                }
+            },
+            symbolSize: function(val) {
+                return val[2] / 8;
+            },
+            itemStyle: {
+                normal: {
+                    color: color[1]
+                }
+            },
+            data: [{
+                name: '中国',
+                value: [116.40, 39.90, 30],
+                label: {
+                    normal: {
+                        position: 'right'
+                    }
+                }
+            }]
+        });
+
+        chart.setOption({
+            backgroundColor: '#101724',
+            geo: {
+                map: 'world',
+                roam: true,
+                itemStyle: {
+                    normal: {
+                        areaColor: '#323c48',
+                        borderColor: '#111'
+                    },
+                    emphasis: {
+                        areaColor: '#2a333d'
+                    }
+                }
+            },
+            series: series
+        });
+    </script>
+</body>
+</html>
+
+</body>
+</html>

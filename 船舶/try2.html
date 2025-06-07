@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <!-- 引入 ECharts 文件 -->
+  <script src="echarts.min.js"></script>
+  <script src="china.js"></script>
+  <style>
+    body, html { height: 100%; margin: 0; }
+    #container { height: 100%; }
+    .flex-container {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      margin: 20px;
+    }
+    .map-container {
+      width: 60%; /* 调整宽度以适应侧边布局 */
+      height: 800px; /* 与环形图高度一致 */
+      margin-right: 20px; /* 与环形图之间留间距 */
+    }
+    .map-image {
+      width: 100%;
+      height: 100%;
+      object-fit: contain; 
+    }
+    /* 嵌套环形图容器样式 */
+    .pie-charts-container {
+      width: 600px; /* 固定宽度，让环形布局稳定 */
+      height: 600px;
+    }
+    #mainBar {
+      width: 100%; 
+      height: 300px; 
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <!-- 容器用于并排显示地图和环形图 -->
+  <div class="flex-container">
+    <!-- 地图图片容器 -->
+    <div class="map-container">
+      <img src="china-ship-industry-map.png" alt="中国船舶行业产值分布图" class="map-image">
+    </div>
+    <!-- 嵌套环形图容器 -->
+    <div class="pie-charts-container" id="nestedPie"></div>
+  </div>
+
+  <!-- 柱状图容器 -->
+  <div id="mainBar"></div>
+
+  <div id="container" style="height: 100%"></div>
+
+  <script src="https://fastly.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+
+  <script type="text/javascript">
+    // --------------------------- 国内部分 ---------------------------
+    var myChartBar = echarts.init(document.getElementById('mainBar'));
+    var data = [
+      { name: '江苏', value: 41.4 },
+      { name: '上海', value: 15.3 },
+      { name: '浙江', value: 11.8 },
+      { name: '广东', value: 9.2 },
+      { name: '辽宁', value: 9 },
+      { name: '山东', value: 6.1 },
+      { name: '湖北', value: 1.1 },
+      { name: '福建', value: 2.8 },
+      { name: '北京', value: 0.1 },
+      { name: '安徽', value: 1.5 },
+      { name: '江西', value: 0.2 },
+      { name: '重庆', value: 0.4 },
+      { name: '广西', value: 0.6 }
+    ];
+
+    var barOption = {
+      title: { text: '各省船舶产值', textStyle: { fontSize: 20 } },
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+          type: 'shadow'
+        }
+      },
+      legend: { data: ['产值'] },
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
+      },
+      xAxis: {
+        data: data.map(item => item.name),
+        axisTick: { alignWithLabel: true },
+        axisLabel: {
+          rotate: 45, 
+          interval: 0
+        }
+      },
+      yAxis: {
+        name: '产值（亿元）',
+        splitLine: { show: true }
+      },
+      series: [
+        {
+          name: '产值',
+          type: 'bar',
+          data: data.map(item => item.value),
+          itemStyle: {
+            color: '#007bff'
+          },
+          barWidth: '40%'
+        }
+      ]
+    };
+
+    myChartBar.setOption(barOption);
+
+    // --------------------------- 嵌套环形图部分 ---------------------------
+    var dom = document.getElementById('nestedPie');
+    var myChart = echarts.init(dom, null, { renderer: 'canvas' });
+    var app = {};
+
+    // 三层数据（可替换为实际数据）
+    var dataLayer1 = [
+      { value: 51, name: '中国' },
+      { value: 28, name: '韩国' },
+      { value: 15.6, name: '日本' },
+      { value: 5.4, name: '其他国家' }
+    ]; // 最外层数据
+    var dataLayer2 = [
+      { value: 64.5, name: '中国' },
+      { value: 19, name: '韩国' },
+      { value: 12.3, name: '日本' },
+      { value: 4.2, name: '其他国家' }
+    ]; // 中间层数据
+    var dataLayer3 = [
+      { value: 51, name: '中国' },
+      { value: 28, name: '韩国' },
+      { value: 15.6, name: '日本' },
+      { value: 5.4, name: '其他国家' }
+    ]; // 最内层数据
+
+    var option = {
+      tooltip: {
+        trigger: 'item',
+        formatter: '{a} <br/>{b}: {c} ({d}%)'
+      },
+      legend: {
+        type: 'scroll',
+        orient: 'horizontal',
+        left: 'center',
+        bottom: '3%',
+        textStyle: { fontSize: 12 }
+      },
+      series: [
+        // 最外层半环形（半径最大，角度90-270）
+        {
+          name: '全球手持订单占比',
+          type: 'pie',
+          radius: ['60%', '80%'], // 外层半径范围
+          center: ['50%', '65%'], // 垂直中心调整
+          startAngle: 90, // 从90度开始
+          endAngle: 270,  // 到-90度（即270度）
+          data: dataLayer1,
+          label: {
+            show: true,
+            position: 'outside',
+            formatter: '{b}: {d}%',
+            fontSize: 10
+          },
+          labelLine: { length: 8, length2: 16 }
+        },
+        // 中间层半环形（半径中等，角度90-270）
+        {
+          name: '全球新接订单类型',
+          type: 'pie',
+          radius: ['40%', '60%'], // 中间半径范围
+          center: ['50%', '65%'],
+          startAngle: 90,
+          endAngle: 270,
+          data: dataLayer2,
+          label: {
+            show: true,
+            position: 'outside',
+            formatter: '{b}: {d}%',
+            fontSize: 9
+          },
+          labelLine: { length: 6, length2: 12 }
+        },
+        // 最内层半环形（半径最小，角度90-270）
+        {
+          name: '全球造船完工量份额',
+          type: 'pie',
+          radius: ['20%', '40%'], // 内层半径范围
+          center: ['50%', '65%'],
+          startAngle: 90,
+          endAngle: 270,
+          data: dataLayer3,
+          label: {
+            show: true,
+            position: 'outside',
+            formatter: '{b}: {d}%',
+            fontSize: 8
+          },
+          labelLine: { length: 4, length2: 8 }
+        }
+      ]
+    };
+
+    myChart.setOption(option);
+    window.addEventListener('resize', myChart.resize);
+  </script>
+</body>
+</html>

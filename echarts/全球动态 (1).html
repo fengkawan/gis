@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>船舶订单动态流向图</title>
+  <script src="echarts.js"></script>
+  <script src="world.js"></script>
+  <style>
+    html, body { height: 100%; margin: 0; }
+    #container { width: 100%; height: calc(100% - 40px); border: 1px solid #eee; }
+    #timeline { width: 100%; height: 40px; }
+    .error { color: red; padding: 10px; }
+  </style>
+</head>
+<body>
+  <div id="container"></div>
+  <div id="timeline"></div>
+  <div class="error" id="errorMsg"></div>
+
+  <script>
+    fetch('https://xyd0916.github.io/lakes/table.json')
+      .then(response => response.json())
+      .then(data => processData(data))
+      .catch(error => handleError(error));
+
+    function processData(excelData) {
+      // 【关键】打印原始数据量
+      console.log('原始数据量：', excelData.length);
+
+      // 数据清洗：过滤无效数据
+      const validData = excelData.filter(item => {
+        // 校验必填字段
+        const hasValidFields = item.date && item.shipownerX && item.shipownerY && item.shipyardX && item.shipyardY && item.shipType && item.quantity;
+
+        // 校验坐标是否为有效数字
+        const isCoordinatesValid =
+          !isNaN(parseFloat(item.shipownerX)) &&
+          !isNaN(parseFloat(item.shipownerY)) &&
+          !isNaN(parseFloat(item.shipyardX)) &&
+          !isNaN(parseFloat(item.shipyardY));
+
+        // 校验数量是否为正整数
+        const isQuantityValid = !isNaN(parseInt(item.quantity)) && parseInt(item.quantity) > 0;
+
+        if (!hasValidFields || !isCoordinatesValid || !isQuantityValid) {
+          console.warn('过滤无效数据：', item);
+          return false;
+        }
+        return true;
+      });
+
+      if (validData.length === 0) {
+        throw new Error('错误：过滤后无有效数据！');
+      }
+
+      const colorMap = {
+        '集装箱船': '#409EFF', '油船': '#FF6B6B',
+        '气体船': '#00BFA5', '散货船': '#FFD166',
+        '其他': '#909399'
+      };
+
+      const processedData = validData.map(item => {
+        const date = new Date(item.date);
+        if (isNaN(date.getTime())) {
+          console.error('日期解析失败：', item.date, '跳过该条数据');
+          return null; // 跳过解析失败的条目
+        }
+        return {
+          ...item,
+          timestamp: date.getTime(),
+          shipownerX: parseFloat(item.shipownerX),
+          shipownerY: parseFloat(item.shipownerY),
+          shipyardX: parseFloat(item.shipyardX),
+          shipyardY: parseFloat(item.shipyardY),
+          quantity: parseInt(item.quantity), // 确保数量为整数
+          lineWidth: Math.max(1, item.quantity / 3),
+          color: colorMap[item.shipType] || colorMap['其他']
+        };
+      }).filter(item => item !== null); // 过滤掉日期解析失败的条目
+
+      // 【关键】打印处理后的数据量
+      console.log('处理后有效数据量：', processedData.length);
+
+      const chart = echarts.init(document.getElementById('container'));
+      const timeline = echarts.init(document.getElementById('timeline'));
+
+      const timestamps = Array.from(new Set(processedData.map(d => d.timestamp))).sort((a, b) => a - b);
+
+      // 【关键】检查时间轴是否包含多个时间点
+      if (timestamps.length <= 1) {
+        throw new Error(`错误：仅有 ${timestamps.length} 个时间点，可能日期重复或解析错误`);
+      }
+
+      timeline.setOption({
+        data: timestamps.map(t => new Date(t).toLocaleDateString()),
+        currentIndex: 0,
+        playInterval: 1000, // 进一步加快播放速度
+        autoPlay: true,
+        label: { formatter: t => t }, // 显示完整日期时间
+        height: 40
+      });
+
+      chart.setOption({
+        title: { text: '全球船舶订单动态流向图', left: 'center' },
+        geo: {
+          map: 'world',
+          center: [110, 30], // 更精准的中国中心
+          zoom: 4, // 放大至亚洲区域
+          label: { show: false },
+          itemStyle: {
+            areaColor: '#f0f0f0',
+            borderColor: '#ddd'
+          },
+          roam: true
+        },
+        series: [{
+          name: '订单流向',
+          type: 'lines',
+          coordinateSystem: 'geo',
+          effect: {
+            show: true,
+            period: 2, // 最短动画周期
+            trailLength: 0.3, // 极短尾迹
+            symbol: 'arrow',
+            symbolSize: 4, // 更小箭头
+            color: '#333' // 深色箭头
+          },
+          lineStyle: {
+            normal: {
+              width: '{c}.lineWidth',
+              color: '{c}.color',
+              opacity: 0.9, // 更高透明度
+              curveness: 0 // 直线显示
+            }
+          },
+          data: []
+        }]
+      });
+
+      function updateChart(currentTime) {
+        const data = processedData
+          .filter(d => d.timestamp <= currentTime)
+          .map(d => ({
+            fromName: d.船东,
+            toName: d.船厂,
+            coords: [[d.shipownerX, d.shipownerY], [d.shipyardX, d.shipyardY]],
+            lineStyle: {
+              width: d.lineWidth,
+              color: d.color
+            },
+            effect: {
+              symbolSize: d.lineWidth // 箭头大小等于线宽
+            }
+          }));
+
+        // 【关键】打印当前时间点数据量
+        console.log(`当前时间（${new Date(currentTime).toLocaleString()}）数据量：`, data.length);
+
+        chart.setOption({
+          series: [{ data: data }],
+          geo: {
+            // 动态调整地图中心（可选，若数据分布分散）
+            center: data.length > 0 ? calculateCenter(data) : [110, 30]
+          }
+        });
+      }
+
+      function calculateCenter(data) {
+        const lngs = data.map(d => d.coords[0][0]);
+        const lats = data.map(d => d.coords[0][1]);
+        return [
+          lngs.reduce((a, b) => a + b, 0) / lngs.length,
+          lats.reduce((a, b) => a + b, 0) / lats.length
+        ];
+      }
+
+      timeline.on('change', (params) => {
+        updateChart(timestamps[params.currentIndex]);
+      });
+
+      // 初始化加载
+      if (timestamps.length > 0) {
+        updateChart(timestamps[0]);
+      } else {
+        document.getElementById('errorMsg').textContent = '错误：无有效时间点';
+      }
+    }
+
+    function handleError(error) {
+      document.getElementById('errorMsg').textContent = `错误：${error.message}`;
+      console.error('详细错误：', error);
+    }
+  </script>
+</body>
+</html>

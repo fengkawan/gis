@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>船舶结构展示</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f8ff;
+            color: #333;
+        }
+        header {
+            background-color: #1e50a2;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+        h1 {
+            margin: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        .ship-section {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        .section-header {
+            background-color: #3a7bd5;
+            color: white;
+            padding: 15px 20px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+        }
+        .section-header i {
+            margin-right: 10px;
+            font-size: 24px;
+        }
+        .section-content {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 20px;
+        }
+        .section-image {
+            flex: 1;
+            min-width: 300px;
+            padding: 10px;
+        }
+        .section-image img {
+            width: 100%;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .section-text {
+            flex: 1;
+            min-width: 300px;
+            padding: 10px;
+        }
+        .components {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+        .component {
+            width: 200px;
+            margin: 10px;
+            text-align: center;
+        }
+        .component img {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
+        footer {
+            background-color: #1e50a2;
+            color: white;
+            text-align: center;
+            padding: 15px 0;
+            margin-top: 30px;
+        }
+        @media (max-width: 768px) {
+            .section-content {
+                flex-direction: column;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>船舶结构展示</h1>
+            <p>探索现代船舶的主要组成部分</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="ship-section">
+            <div class="section-header">
+                <i class="fas fa-ship"></i>
+                <h2>船体结构</h2>
+            </div>
+            <div class="section-content">
+                <div class="section-image">
+                    <img src="https://www.marineinsight.com/wp-content/uploads/2019/08/Ship-Construction.jpg" alt="船体结构">
+                </div>
+                <div class="section-text">
+                    <p>船体是船舶的主体结构，由船壳、甲板、舱壁等组成，为船舶提供浮力和装载空间。现代船体通常采用钢质结构，特殊船舶可能使用铝合金或复合材料。</p>
+                    <div class="components">
+                        <div class="component">
+                            <img src="https://www.marineinsight.com/wp-content/uploads/2012/02/Keel.jpg" alt="龙骨">
+                            <h3>龙骨</h3>
+                            <p>船体的主要纵向结构</p>
+                        </div>
+                        <div class="component">
+                            <img src="https://www.marineinsight.com/wp-content/uploads/2012/02/Bulkhead.jpg" alt="舱壁">
+                            <h3>舱壁</h3>
+                            <p>分隔船体内部空间</p>
+                        </div>
+                        <div class="component">
+                            <img src="https://www.marineinsight.com/wp-content/uploads/2012/02/Deck.jpg" alt="甲板">
+                            <h3>甲板</h3>
+                            <p>船体的水平结构</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ship-section">
+            <div class="section-header">
+                <i class="fas fa-cogs"></i>
+                <h2>发动机系统</h2>
+            </div>
+            <div class="section-content">
+                <div class="section-image">
+                    <img src="https://www.marineinsight.com/wp-content/uploads/2019/08/Marine-Diesel-Engine.jpg" alt="船舶发动机">
+                </div>
+                <div class="section-text">
+                    <p>船舶发动机是船舶的动力来源，现代商船主要使用低速二冲程柴油机，功率可达数万马力。发动机通过轴系将动力传递给螺旋桨。</p>
+                    <div class="components">
+                        <div class="component">
+                            <img src="https://www.marineinsight.com/wp-content/uploads/2012/02/Cylinder.jpg" alt="气缸">
+                            <h3>气缸</h3>
+                            <p>发动机燃烧室</p>
+                        </div>
+                        <div class="component">
+                            <img src="https://www.marineinsight.com/wp-content/uploads/2012/02/Crankshaft.jpg" alt="曲轴">
+                            <h3>曲轴</h3>
+                            <p>转换往复运动为旋转运动</p>
+                        </div>
+                        <div class="component">
+                            <img src="https://www.marineinsight.com/wp-content/uploads/2012/02/Turbocharger.jpg" alt="涡轮增压器">
+                            <h3>涡轮增压器</h3>
+                            <p>提高进气压力</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="ship-section">
+            <div class="section-header">
+                <i class="fas fa-tachometer-alt"></i>
+                <h2>动力装置</h2>
+            </div>
+            <div class="section-content">
+                <div class="section-image">
+                    <img src="https://www.marineinsight.com/wp-content/uploads/2019/08/Propulsion-System.jpg" alt="船舶动力装置">
+                </div>
+                <div class="section-text">
+                    <p>船舶动力装置将发动机功率转化为推进力，主要包括轴系、螺旋桨、舵系统等。现代船舶还采用可调螺距螺旋桨、舵桨合一等先进技术。</p>
+                    <div class="components">
+                        <div class="component">
+                            <img src="https://www.marineinsight.com/wp-content/uploads/2012/02/Propeller.jpg" alt="螺旋桨">
+                            <h3>螺旋桨</h3>
+                            <p>产生推进力</p>
+                        </div>
+                        <div class="component">
+                            <img src="https://www.marineinsight.com/wp-content/uploads/2012/02/Shaft.jpg" alt="轴系">
+                            <h3>轴系</h3>
+                            <p>传递动力</p>
+                        </div>
+                        <div class="component">
+                            <img src="https://www.marineinsight.com/wp-content/uploads/2012/02/Rudder.jpg" alt="舵">
+                            <h3>舵</h3>
+                            <p>控制航向</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2023 船舶结构展示 | 数据来源: Marine Insight</p>
+        </div>
+    </footer>
+</body>
+</html>

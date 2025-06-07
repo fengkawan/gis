@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-CN" style="height: 100%">
+<head>
+  <meta charset="utf-8">
+  <title>按年份变化的动态条形图</title>
+  <style>
+    body {
+      font-family: 'Microsoft YaHei', sans-serif;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    #container {
+      flex: 1;
+      min-height: 500px;
+    }
+    .controls {
+      padding: 10px;
+      text-align: center;
+      background-color: #f5f5f5;
+    }
+    button {
+      margin: 0 5px;
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+    #yearDisplay {
+      font-size: 24px;
+      font-weight: bold;
+      margin: 0 20px;
+    }
+  </style>
+</head>
+<body>
+  <div id="container"></div>
+  <div class="controls">
+    <button id="prevYear">上一年</button>
+    <span id="yearDisplay">2009</span>
+    <button id="nextYear">下一年</button>
+    <button id="playPause">播放</button>
+  </div>
+
+  <script type="text/javascript" src="https://fastly.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+
+  <script type="text/javascript">
+    var dom = document.getElementById('container');
+    var myChart = echarts.init(dom);
+    var app = {};
+
+    // 解析你的数据结构（文件名对应年份，数据组对应指标）
+    const yearData = {
+      // 9.xls 对应年份2009（假设文件名中的数字为年份后两位，不足两位补前导0）
+      '2009': [
+        { "value": 1527, "name": "江苏省" },
+        { "value": 875, "name": "上海市" },
+        { "value": 518.5, "name": "辽宁省" },
+        { "value": 775.4, "name": "浙江省" }
+      ],
+      '2010': [ // 10.xls
+        { "value": 2332.8, "name": "江苏" },       // 自动统一名称为全称
+        { "value": 1210.9, "name": "上海" },
+        { "value": 855, "name": "辽宁" },
+        { "value": 1067.5, "name": "浙江" }
+      ],
+      '2019': [ // 19.xls
+        { "value": 1797.5, "name": "江苏" },
+        { "value": 747.8, "name": "上海" },
+        { "value": 354, "name": "辽宁" },
+        { "value": 303.7, "name": "浙江" }
+      ],
+      '2021': [ // 21.xlsx
+        { "value": 621.4, "name": "辽宁" },
+        { "value": 575.9, "name": "上海" },
+        { "value": 1707.3, "name": "江苏" },
+        { "value": 330.5, "name": "浙江" }
+      ],
+      '2022': [ // 22.xlsx
+        { "value": 552.2945, "name": "辽宁" },
+        { "value": 595.2094, "name": "上海" },
+        { "value": 1739.663, "name": "江苏" },
+        { "value": 308.8523, "name": "浙江" }
+      ]
+    };
+
+    // 统一名称为全称（处理不同文件中的简称问题）
+    const nameMapper = {
+      '江苏': '江苏省',
+      '上海': '上海市',
+      '辽宁': '辽宁省',
+      '浙江': '浙江省'
+    };
+
+    // 生成标准化数据结构
+    const years = Object.keys(yearData).sort((a, b) => parseInt(a) - parseInt(b)); // 按年份排序
+    const categories = ['江苏省', '上海市', '辽宁省', '浙江省']; // 固定分类顺序（可自动去重生成）
+
+    // 为每个省市设置固定颜色
+    const categoryColors = {
+      '江苏省': '#FF6B6B',  // 红色系
+      '上海市': '#00CC96',  // 绿色系
+      '辽宁省': '#4ECDC4',  // 蓝色系
+      '浙江省': '#C779D0'   // 紫色系
+    };
+
+    // 预处理数据：统一名称并补全所有年份数据
+    const standardizedData = {};
+    years.forEach(year => {
+      standardizedData[year] = yearData[year].map(item => ({
+        name: nameMapper[item.name] || item.name, // 统一名称
+        value: item.value
+      }));
+    });
+
+    // 当前年份索引
+    let currentYearIndex = 0;
+    let isPlaying = false;
+    let playInterval;
+
+    // 更新年份显示
+    function updateYearDisplay() {
+      document.getElementById('yearDisplay').textContent = years[currentYearIndex];
+    }
+
+    // 获取当前年份的数据（按分类顺序排列）
+    function getCurrentData() {
+      const currentYear = years[currentYearIndex];
+      const yearDataSet = standardizedData[currentYear];
+      
+      // 按固定分类顺序排序，确保各年份数据顺序一致
+      return categories.map(category => {
+        const item = yearDataSet.find(item => item.name === category);
+        return item || { name: category, value: 0 }; // 补全缺失数据
+      });
+    }
+
+    // 初始化图表配置
+    const option = {
+      backgroundColor: '#f8f9fa',
+      title: {
+        text: '各省市船舶完工量载重量对比（2009-2022）',
+        left: 'center',
+        textStyle: {
+          fontSize: 20,
+          color: '#333'
+        }
+      },
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: { type: 'shadow' },
+        formatter: function(params) {
+          const [dataItem] = params;
+          return `<div style="font-weight:bold">${dataItem.name}</div>
+                  <div>${years[currentYearIndex]}年: ${dataItem.value.toFixed(2)}</div>`;
+        }
+      },
+      xAxis: {
+        type: 'value',
+        name: '载重量（单位：万吨）',
+        max: 'dataMax',
+        axisLabel: {
+          formatter: '{value}吨' // 统一单位显示
+        }
+      },
+      yAxis: {
+        type: 'category',
+        data: categories, // 使用固定分类顺序
+        inverse: true,
+        animationDuration: 300,
+        animationDurationUpdate: 300
+      },
+      series: [
+        {
+          realtimeSort: true, // 按数值实时排序
+          name: '载重量',
+          type: 'bar',
+          data: getCurrentData(),
+          label: {
+            show: true,
+            position: 'right',
+            valueAnimation: true,
+            formatter: '{c}' // 直接显示数值
+          },
+          itemStyle: {
+            // 根据省市名称获取固定颜色
+            color: function(params) {
+              return categoryColors[params.data.name] || '#999';
+            }
+          }
+        }
+      ],
+      animationDuration: 800,
+      animationDurationUpdate: 800,
+      animationEasing: 'cubicInOut',
+      animationEasingUpdate: 'cubicInOut'
+    };
+
+    myChart.setOption(option);
+
+    // 更新图表数据
+    function updateChart() {
+      myChart.setOption({
+        series: [{ data: getCurrentData() }]
+      });
+      updateYearDisplay();
+    }
+
+    // 年份控制函数
+    function nextYear() {
+      if (currentYearIndex < years.length - 1) {
+        currentYearIndex++;
+        updateChart();
+      }
+    }
+
+    function prevYear() {
+      if (currentYearIndex > 0) {
+        currentYearIndex--;
+        updateChart();
+      }
+    }
+
+    function togglePlay() {
+      if (isPlaying) {
+        clearInterval(playInterval);
+        document.getElementById('playPause').textContent = '播放';
+      } else {
+        playInterval = setInterval(nextYear, 2000);
+        document.getElementById('playPause').textContent = '暂停';
+      }
+      isPlaying = !isPlaying;
+    }
+
+    // 绑定事件
+    document.getElementById('prevYear').addEventListener('click', prevYear);
+    document.getElementById('nextYear').addEventListener('click', nextYear);
+    document.getElementById('playPause').addEventListener('click', togglePlay);
+
+    // 初始化
+    updateYearDisplay();
+    window.addEventListener('resize', myChart.resize);
+  </script>
+</body>
+</html>
