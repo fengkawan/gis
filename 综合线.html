@@ -772,7 +772,7 @@ body {
 
             if (dataset === 'clear') {
                 data = [];
-                title = "船舶产业与材料全球分布地图";
+                title = "船舶产业与材料全球流向图";
                 legendTitle = "类别";
                 infoFormatter = function(params) {
                     return params.name || '未知';
@@ -787,7 +787,7 @@ body {
                 });
             } else if (dataset === 'restricted') {
                 data = restrictedData;
-                title = "中国造船受限产业全球分布地图";
+                title = "中国造船受限产业全球流向图";
                 legendTitle = "产业类别";
                 infoFormatter = function(params) {
                     if (params.data && params.data.items) {
