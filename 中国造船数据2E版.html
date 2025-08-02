@@ -44,7 +44,7 @@
     // --------------------------- 地图部分 ---------------------------
   var mapDom = document.getElementById('mapContainer');
   var mapChart = echarts.init(mapDom);  
-  var name_title = "2023年各省造船总值（亿元）";
+  var name_title = "2023年各省造船总值（亿元,不含港澳台地区数据）";
 var mapName = 'china';
 var mapdata = [
       { name: '江苏', value: 41.4 },
@@ -326,3 +326,4 @@ mapChart.setOption(mapOption);
   </script>
 </body>
 </html>
+
